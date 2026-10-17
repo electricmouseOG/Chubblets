@@ -1,0 +1,321 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chubblet Collection</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 12px;
+    background: transparent;
+    font-family: Arial, sans-serif;
+  }
+
+  /* CARD */
+  .chubblet-card {
+    position: relative;
+    isolation: isolate;
+    width: 100%;
+    overflow: hidden;
+    padding: 3px;
+    border-radius: 18px;
+    background: transparent;
+  }
+
+  /* Animated neon border */
+  .chubblet-card::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    border-radius: 18px;
+    background: conic-gradient(
+      #071020,
+      #174d9b,
+      #6c45cb,
+      #1c9fe8,
+      #071020,
+      #174d9b
+    );
+    animation: border-spin 9s linear infinite;
+  }
+
+  /* Animated card background */
+  .chubblet-bg {
+    position: absolute;
+    z-index: 1;
+    inset: 3px;
+    border-radius: 15px;
+    background:
+      radial-gradient(
+        ellipse at 15% 20%,
+        #153d72 0%, transparent 48%
+      ),
+      radial-gradient(
+        ellipse at 90% 85%,
+        #30205f 0%, transparent 48%
+      ),
+      linear-gradient(145deg, #111e36, #070c19 75%);
+    background-size: 180% 180%;
+    animation: glow-move 10s ease-in-out infinite alternate;
+  }
+
+  /* Moving stars */
+  .chubblet-stars {
+    position: absolute;
+    z-index: 2;
+    inset: 3px;
+    border-radius: 15px;
+    pointer-events: none;
+    opacity: .5;
+    background-image:
+      radial-gradient(2px 2px at 20px 30px,
+        #d4e8ff 99%, transparent),
+      radial-gradient(1.5px 1.5px at 90px 80px,
+        #72baff 99%, transparent),
+      radial-gradient(2px 2px at 150px 45px,
+        #fff 99%, transparent),
+      radial-gradient(1px 1px at 65px 130px,
+        #9aabff 99%, transparent);
+    background-size: 180px 160px;
+    animation: stars-move 18s linear infinite;
+  }
+
+  .chubblet-content {
+    position: relative;
+    z-index: 3;
+    padding: 18px;
+  }
+
+  /* TITLE */
+  .chubblet-title {
+    margin: 0 0 18px;
+    text-align: center;
+    font-size: clamp(21px, 5vw, 28px);
+    font-weight: 900;
+    letter-spacing: 1.5px;
+    color: #edf5ff;
+    text-shadow:
+      0 0 8px #498fff99,
+      0 0 24px #498fff44;
+    overflow-wrap: anywhere;
+  }
+
+  /* IMAGE: 50% width, no added frame */
+  .chubblet-image-frame {
+    width: 50%;
+    margin: 0 auto;
+    overflow: visible;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    line-height: 0;
+  }
+
+  .chubblet-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    filter: none;
+  }
+
+  /* OWNED CHECKBOX */
+  .chubblet-owned {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .chubblet-checkbox {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+  }
+
+  .chubblet-check {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: 22px;
+    height: 22px;
+    flex-shrink: 0;
+    border: 2px solid #48628a;
+    border-radius: 6px;
+    background: #0a1324;
+    transition: .25s ease;
+  }
+
+  .chubblet-check::after {
+    content: "";
+    width: 5px;
+    height: 10px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) scale(0);
+    transition: transform .2s ease;
+  }
+
+  .chubblet-checkbox:checked + .chubblet-check {
+    background: #347bff;
+    border-color: #80b0ff;
+    box-shadow: 0 0 14px #3984ff99;
+  }
+
+  .chubblet-checkbox:checked + .chubblet-check::after {
+    transform: rotate(45deg) scale(1);
+  }
+
+  .chubblet-checkbox:focus-visible + .chubblet-check {
+    outline: 2px solid white;
+    outline-offset: 3px;
+  }
+
+  .chubblet-owned-text {
+    color: #e3edff;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: .5px;
+  }
+
+  /* COLLECTION STATUS */
+  .chubblet-status {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #8192b2;
+  }
+
+  .chubblet-card.is-owned .chubblet-status {
+    color: #79bdff;
+    text-shadow: 0 0 12px #388cff88;
+  }
+
+  /* ANIMATIONS */
+  @keyframes border-spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes glow-move {
+    from { background-position: 0% 0%; }
+    to { background-position: 100% 100%; }
+  }
+
+  @keyframes stars-move {
+    from { background-position: 0 0; }
+    to { background-position: 180px 320px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chubblet-card::before,
+    .chubblet-bg,
+    .chubblet-stars {
+      animation: none;
+    }
+  }
+</style>
+</head>
+
+<body>
+
+<div class="chubblet-card">
+  <div class="chubblet-bg"></div>
+  <div class="chubblet-stars"></div>
+
+  <div class="chubblet-content">
+    <h2 class="chubblet-title" id="chubblet-title"></h2>
+
+    <div class="chubblet-image-frame">
+      <img class="chubblet-image" id="chubblet-image" alt="">
+    </div>
+
+    <label class="chubblet-owned">
+      <input type="checkbox" class="chubblet-checkbox"
+             id="chubblet-checkbox">
+      <span class="chubblet-check"></span>
+      <span class="chubblet-owned-text">Owned</span>
+    </label>
+
+    <div class="chubblet-status" id="chubblet-status">
+      NOT COLLECTED
+    </div>
+  </div>
+</div>
+
+<script>
+  // ==========================================
+  // EDIT THESE SETTINGS FOR YOUR CHUBBLET
+  // ==========================================
+  const chubbletName = "Shadow";
+
+  const chubbletImage =
+    "https://placehold.co/500x350/101a30/8faaff?text=Your+Chubblet";
+
+  // IMPORTANT: use a unique key for each creature.
+  // Keep this key unchanged after publishing.
+  const chubbletSaveKey = "my-chubblet-shadow-owned-v1";
+
+  const title = document.getElementById("chubblet-title");
+  const image = document.getElementById("chubblet-image");
+  const checkbox = document.getElementById("chubblet-checkbox");
+  const status = document.getElementById("chubblet-status");
+  const card = document.querySelector(".chubblet-card");
+
+  title.textContent = chubbletName + " Chubblet";
+  image.src = chubbletImage;
+  image.alt = chubbletName + " Chubblet";
+
+  function updateDisplay() {
+    card.classList.toggle("is-owned", checkbox.checked);
+    status.textContent = checkbox.checked
+      ? "✓ COLLECTED"
+      : "NOT COLLECTED";
+  }
+
+  // Restore saved checkbox state when the page opens.
+  try {
+    checkbox.checked =
+      localStorage.getItem(chubbletSaveKey) === "true";
+  } catch (error) {
+    console.error("Unable to read saved progress:", error);
+  }
+
+  updateDisplay();
+
+  // Save whenever the checkbox changes.
+  checkbox.addEventListener("change", () => {
+    updateDisplay();
+
+    try {
+      localStorage.setItem(
+        chubbletSaveKey,
+        checkbox.checked ? "true" : "false"
+      );
+    } catch (error) {
+      console.error("Unable to save progress:", error);
+      alert("Your browser blocked saving. Please check your browser settings.");
+    }
+  });
+</script>
+
+</body>
+</html>
